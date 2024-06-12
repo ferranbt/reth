@@ -130,7 +130,7 @@ pub fn validate_withdrawals_presence(
     timestamp: u64,
     has_withdrawals: bool,
 ) -> Result<(), EngineObjectValidationError> {
-    println!("IT IS BEING CALLED...");
+    println!("IT IS BEING CALLED");
 
     let is_shanghai = chain_spec.is_shanghai_active_at_timestamp(timestamp);
 
