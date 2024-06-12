@@ -74,6 +74,7 @@ pub fn validate_payload_timestamp(
 ) -> Result<(), EngineObjectValidationError> {
     let is_cancun = chain_spec.is_cancun_active_at_timestamp(timestamp);
     if version == EngineApiMessageVersion::V2 && is_cancun {
+        println!("dafuq3");
         // From the Engine API spec:
         //
         // ### Update the methods of previous forks
@@ -95,6 +96,7 @@ pub fn validate_payload_timestamp(
     }
 
     if version == EngineApiMessageVersion::V3 && !is_cancun {
+        println!("dafuq4");
         // From the Engine API spec:
         // <https://github.com/ethereum/execution-apis/blob/ff43500e653abde45aec0f545564abfb648317af/src/engine/cancun.md#specification-2>
         //
@@ -133,20 +135,24 @@ pub fn validate_withdrawals_presence(
     match version {
         EngineApiMessageVersion::V1 => {
             if has_withdrawals {
+                println!("dafuq5");
                 return Err(message_validation_kind
                     .to_error(VersionSpecificValidationError::WithdrawalsNotSupportedInV1))
             }
             if is_shanghai {
+                println!("dafuq6");
                 return Err(message_validation_kind
                     .to_error(VersionSpecificValidationError::NoWithdrawalsPostShanghai))
             }
         }
         EngineApiMessageVersion::V2 | EngineApiMessageVersion::V3 => {
             if is_shanghai && !has_withdrawals {
+                println!("dafuq7");
                 return Err(message_validation_kind
                     .to_error(VersionSpecificValidationError::NoWithdrawalsPostShanghai))
             }
             if !is_shanghai && has_withdrawals {
+                println!("dafuq8");
                 return Err(message_validation_kind
                     .to_error(VersionSpecificValidationError::HasWithdrawalsPreShanghai))
             }
@@ -232,6 +238,7 @@ pub fn validate_parent_beacon_block_root_presence(
     match version {
         EngineApiMessageVersion::V1 | EngineApiMessageVersion::V2 => {
             if has_parent_beacon_block_root {
+                println!("dafuq1");
                 return Err(validation_kind.to_error(
                     VersionSpecificValidationError::ParentBeaconBlockRootNotSupportedBeforeV3,
                 ))
@@ -239,6 +246,7 @@ pub fn validate_parent_beacon_block_root_presence(
         }
         EngineApiMessageVersion::V3 => {
             if !has_parent_beacon_block_root {
+                println!("dafuq1");
                 return Err(validation_kind
                     .to_error(VersionSpecificValidationError::NoParentBeaconBlockRootPostCancun))
             }
