@@ -308,6 +308,18 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "optimism")] // dev mode not yet supported in op-reth
+    fn parse_optimism_dev() {
+        let args: NodeCommand = NodeCommand::<NoArgs>::parse_from([
+            "reth",
+            "--chain",
+            "/Users/ferranbt/go/src/github.com/ethereum-optimism/optimism/.devnet/genesis-l2.json",
+        ]);
+        println!("Done {:?}", args.chain);
+        println!("xxx1 {}", args.chain.is_optimism());
+    }
+
+    #[test]
     #[cfg(not(feature = "optimism"))] // dev mode not yet supported in op-reth
     fn parse_dev() {
         let cmd = NodeCommand::<NoArgs>::parse_from(["reth", "--dev"]);

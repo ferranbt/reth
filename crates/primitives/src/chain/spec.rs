@@ -577,8 +577,18 @@ impl ChainSpec {
         self.chain
     }
 
+    #[cfg(feature = "optimism")]
+    pub fn is_optimism(&self) -> bool {
+        return true;
+
+        println!("contains bedrock {}", self.hardforks.contains_key(&Hardfork::Bedrock));
+
+        self.chain.is_optimism() || self.hardforks.contains_key(&Hardfork::Bedrock)
+    }
+
     /// Returns `true` if this chain contains Optimism configuration.
     #[inline]
+    #[cfg(not(feature = "optimism"))]
     pub fn is_optimism(&self) -> bool {
         self.chain.is_optimism()
     }

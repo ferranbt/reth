@@ -43,6 +43,9 @@ where
         tracing::info!("Spawning a custom payload builder");
         let conf = ctx.payload_builder_config();
 
+        println!("LFG");
+        println!("Is optimism {}", ctx.chain_spec().clone().is_optimism());
+
         let payload_job_config = BasicPayloadJobGeneratorConfig::default()
             .interval(conf.interval())
             .deadline(conf.deadline())
