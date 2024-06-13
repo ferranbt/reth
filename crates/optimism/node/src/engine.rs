@@ -80,6 +80,7 @@ pub fn validate_withdrawals_presence(
                     .to_error(VersionSpecificValidationError::NoWithdrawalsPostShanghai))
             }
             if !is_shanghai && has_withdrawals {
+                println!("DAFFFUQ");
                 return Err(message_validation_kind
                     .to_error(VersionSpecificValidationError::HasWithdrawalsPreShanghai))
             }
