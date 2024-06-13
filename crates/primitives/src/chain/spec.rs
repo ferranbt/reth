@@ -1061,6 +1061,10 @@ impl From<Genesis> for ChainSpec {
             hardforks,
             paris_block_and_final_difficulty,
             deposit_contract: None,
+            base_fee_params: BaseFeeParamsKind::Constant(BaseFeeParams {
+                max_change_denominator: 250 as u128, // TODO
+                elasticity_multiplier: 6 as u128,
+            }),
             ..Default::default()
         }
     }
