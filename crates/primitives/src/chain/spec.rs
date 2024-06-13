@@ -1039,9 +1039,9 @@ impl From<Genesis> for ChainSpec {
             #[cfg(feature = "optimism")]
             (Hardfork::Regolith, Some(0)),
             #[cfg(feature = "optimism")]
-            (Hardfork::Ecotone, Some(0)),
+            (Hardfork::Ecotone, None),
             #[cfg(feature = "optimism")]
-            (Hardfork::Canyon, None),
+            (Hardfork::Canyon, Some(0)),
         ];
 
         let time_hardforks = time_hardfork_opts
