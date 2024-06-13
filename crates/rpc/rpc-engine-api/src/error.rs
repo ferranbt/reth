@@ -119,6 +119,7 @@ impl From<EngineApiError> for jsonrpsee_types::error::ErrorObject<'static> {
             ) => {
                 // Note: the data field is not required by the spec, but is also included by other
                 // clients
+                println!("DAFUG2 {:?}", error);
                 jsonrpsee_types::error::ErrorObject::owned(
                     INVALID_PARAMS_CODE,
                     INVALID_PARAMS_MSG,
@@ -191,6 +192,7 @@ impl From<EngineApiError> for jsonrpsee_types::error::ErrorObject<'static> {
             // Optimism errors
             #[cfg(feature = "optimism")]
             EngineApiError::MissingGasLimitInPayloadAttributes => {
+                println!("DAFUG1 {:?}", error);
                 jsonrpsee_types::error::ErrorObject::owned(
                     INVALID_PARAMS_CODE,
                     INVALID_PARAMS_MSG,
