@@ -579,10 +579,6 @@ impl ChainSpec {
 
     #[cfg(feature = "optimism")]
     pub fn is_optimism(&self) -> bool {
-        return true;
-
-        println!("contains bedrock {}", self.hardforks.contains_key(&Hardfork::Bedrock));
-
         self.chain.is_optimism() || self.hardforks.contains_key(&Hardfork::Bedrock)
     }
 
@@ -1012,6 +1008,8 @@ impl From<Genesis> for ChainSpec {
             (Hardfork::London, genesis.config.london_block),
             (Hardfork::ArrowGlacier, genesis.config.arrow_glacier_block),
             (Hardfork::GrayGlacier, genesis.config.gray_glacier_block),
+            #[cfg(feature = "optimism")]
+            (Hardfork::Bedrock, Some(0)),
         ];
         let mut hardforks = hardfork_opts
             .iter()
@@ -1038,6 +1036,12 @@ impl From<Genesis> for ChainSpec {
         let time_hardfork_opts = [
             (Hardfork::Shanghai, genesis.config.shanghai_time),
             (Hardfork::Cancun, genesis.config.cancun_time),
+            #[cfg(feature = "optimism")]
+            (Hardfork::Regolith, Some(0)),
+            #[cfg(feature = "optimism")]
+            (Hardfork::Ecotone, Some(0)),
+            #[cfg(feature = "optimism")]
+            (Hardfork::Canyon, None),
         ];
 
         let time_hardforks = time_hardfork_opts
