@@ -223,7 +223,7 @@ where
 /// and configuration, this function creates a transaction payload. Returns
 /// a result indicating success with the payload or an error in case of failure.
 #[inline]
-pub(crate) fn optimism_payload_builder<EvmConfig, Pool, Client>(
+pub fn optimism_payload_builder<EvmConfig, Pool, Client>(
     evm_config: EvmConfig,
     args: BuildArguments<Pool, Client, OptimismPayloadBuilderAttributes, OptimismBuiltPayload>,
     _compute_pending_block: bool,
