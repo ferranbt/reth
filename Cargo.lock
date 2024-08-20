@@ -8075,6 +8075,7 @@ dependencies = [
  "reth-nippy-jar",
  "reth-primitives",
  "reth-prune-types",
+ "reth-revm",
  "reth-stages-types",
  "reth-storage-api",
  "reth-storage-errors",

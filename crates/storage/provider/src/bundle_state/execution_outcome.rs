@@ -4,6 +4,7 @@ use crate::{
 };
 use reth_db::Database;
 pub use reth_execution_types::*;
+use reth_revm::database::StateProviderDatabase;
 use reth_storage_errors::provider::ProviderResult;
 pub use revm::db::states::OriginalValuesKnown;
 
@@ -55,9 +56,23 @@ mod tests {
         primitives::{
             Account as RevmAccount, AccountInfo as RevmAccountInfo, AccountStatus, EvmStorageSlot,
         },
-        DatabaseCommit, State,
+        Database as X, DatabaseCommit, State,
     };
     use std::collections::{BTreeMap, HashMap};
+
+    #[test]
+    fn test_xxx() {
+        let factory = create_test_provider_factory();
+        let provider = factory.provider().unwrap();
+        let state = provider.state_provider_by_block_number(0).unwrap();
+
+        let mut db = State::builder()
+            .with_database(StateProviderDatabase::new(state))
+            .with_bundle_update()
+            .build();
+
+        println!("{:?}", db.block_hash(1000));
+    }
 
     #[test]
     fn write_to_db_account_info() {
