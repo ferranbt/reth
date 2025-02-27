@@ -26,6 +26,9 @@ const L1_BLOCK_ECOTONE_SELECTOR: [u8; 4] = hex!("440a5e20");
 /// The function selector of the "setL1BlockValuesIsthmus" function in the `L1Block` contract.
 const L1_BLOCK_ISTHMUS_SELECTOR: [u8; 4] = hex!("098999be");
 
+/// The function selector of the "setL1BlockValuesInterop" function in the `L1Block` contract.
+const L1_BLOCK_INTEROP_SELECTOR: [u8; 4] = hex!("760ee04d");
+
 /// Extracts the [`L1BlockInfo`] from the L2 block. The L1 info transaction is always the first
 /// transaction in the L2 block.
 ///
@@ -63,10 +66,10 @@ pub fn extract_l1_info_from_tx<T: Transaction>(
 /// # Panics
 /// If the input is shorter than 4 bytes.
 pub fn parse_l1_info(input: &[u8]) -> Result<L1BlockInfo, OpBlockExecutionError> {
-    // If the first 4 bytes of the calldata are the L1BlockInfoEcotone selector, then we parse the
-    // calldata as an Ecotone hardfork L1BlockInfo transaction. Otherwise, we parse it as a
-    // Bedrock hardfork L1BlockInfo transaction.
-    if input[0..4] == L1_BLOCK_ISTHMUS_SELECTOR {
+    // Add interop selector check
+    if input[0..4] == L1_BLOCK_INTEROP_SELECTOR {
+        parse_l1_info_tx_ecotone(input[4..].as_ref())
+    } else if input[0..4] == L1_BLOCK_ISTHMUS_SELECTOR {
         parse_l1_info_tx_isthmus(input[4..].as_ref())
     } else if input[0..4] == L1_BLOCK_ECOTONE_SELECTOR {
         parse_l1_info_tx_ecotone(input[4..].as_ref())
@@ -321,8 +324,8 @@ where
     // If the canyon hardfork is active at the current timestamp, and it was not active at the
     // previous block timestamp (heuristically, block time is not perfectly constant at 2s), and the
     // chain is an optimism chain, then we need to force-deploy the create2 deployer contract.
-    if chain_spec.is_canyon_active_at_timestamp(timestamp) &&
-        !chain_spec.is_canyon_active_at_timestamp(timestamp.saturating_sub(2))
+    if chain_spec.is_canyon_active_at_timestamp(timestamp)
+        && !chain_spec.is_canyon_active_at_timestamp(timestamp.saturating_sub(2))
     {
         trace!(target: "evm", "Forcing create2 deployer contract deployment on Canyon transition");
 
@@ -340,7 +343,7 @@ where
 
         // Commit the create2 deployer account to the database.
         db.commit(HashMap::from_iter([(CREATE_2_DEPLOYER_ADDR, revm_acc)]));
-        return Ok(())
+        return Ok(());
     }
 
     Ok(())
@@ -468,5 +471,28 @@ mod tests {
         assert_eq!(l1_block_info.l1_blob_base_fee_scalar, l1_blob_base_fee_scalar);
         assert_eq!(l1_block_info.operator_fee_scalar, operator_fee_scalar);
         assert_eq!(l1_block_info.operator_fee_constant, operator_fee_constant);
+    }
+
+    #[test]
+    fn parse_l1_info_interop() {
+        // rig
+
+        // L1 block info from a devnet with Interop activated
+        const DATA: &[u8] = &hex!("760ee04d00000558000c5fc500000000000000000000000067c06bae000000000000006a00000000000000000000000000000000000000000000000000000000000005f000000000000000000000000000000000000000000000000000000000000000018f0144b6cf8d017aaa1142b9bb5484d851ea215b4e70eec3d98e01396a497e6200000000000000000000000046fbacbcb07428c6650a216a6150b08ea654f8eb");
+
+        // expected l1 block info verified against expected l1 fee for tx.
+        let l1_base_fee = U256::from(1520);
+        let l1_base_fee_scalar = U256::from(1368);
+        let l1_blob_base_fee = Some(U256::from(1));
+        let l1_blob_base_fee_scalar = Some(U256::from(810949));
+
+        // test
+
+        let l1_block_info = parse_l1_info(DATA).unwrap();
+
+        assert_eq!(l1_block_info.l1_base_fee, l1_base_fee);
+        assert_eq!(l1_block_info.l1_base_fee_scalar, l1_base_fee_scalar);
+        assert_eq!(l1_block_info.l1_blob_base_fee, l1_blob_base_fee);
+        assert_eq!(l1_block_info.l1_blob_base_fee_scalar, l1_blob_base_fee_scalar);
     }
 }
