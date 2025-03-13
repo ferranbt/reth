@@ -500,9 +500,6 @@ where
         if self.network.is_initially_syncing() {
             return
         }
-        if self.network.tx_gossip_disabled() {
-            return
-        }
 
         // get handle to peer's session, if the session is still active
         let Some(peer) = self.peers.get_mut(&peer_id) else {
@@ -723,9 +720,6 @@ where
         if self.network.is_initially_syncing() {
             return
         }
-        if self.network.tx_gossip_disabled() {
-            return
-        }
 
         trace!(target: "net::tx", num_hashes=?hashes.len(), "Start propagating transactions");
 
@@ -882,9 +876,6 @@ where
         propagation_mode: PropagationMode,
     ) -> PropagatedTransactions {
         let mut propagated = PropagatedTransactions::default();
-        if self.network.tx_gossip_disabled() {
-            return propagated
-        }
 
         // send full transactions to a set of the connected peers based on the configured mode
         let max_num_full = self.config.propagation_mode.full_peer_count(self.peers.len());
@@ -986,10 +977,6 @@ where
         response: oneshot::Sender<RequestResult<PooledTransactions<N::PooledTransaction>>>,
     ) {
         if let Some(peer) = self.peers.get_mut(&peer_id) {
-            if self.network.tx_gossip_disabled() {
-                let _ = response.send(Ok(PooledTransactions::default()));
-                return
-            }
             let transactions = self.pool.get_pooled_transaction_elements(
                 request.0,
                 GetPooledTransactionLimit::ResponseSizeSoftLimit(
@@ -1004,6 +991,8 @@ where
 
             let resp = PooledTransactions(transactions);
             let _ = response.send(Ok(resp));
+        } else {
+            let _ = response.send(Err(RequestError::PeerNotFound));
         }
     }
 
@@ -1050,6 +1039,15 @@ where
         }
     }
 
+    fn is_valid_peer(&self, _peer_id: PeerId) -> bool {
+        // TODO: We can filter by peer_id and create a sub-net where we only broadcast transactions to
+        // a given set of peers
+        if self.network.tx_gossip_disabled() {
+            return false;
+        }
+        true
+    }
+
     /// Handles session establishment and peer transactions initialization.
     fn handle_peer_session(
         &mut self,
@@ -1057,6 +1055,10 @@ where
         messages: PeerRequestSender<PeerRequest<N>>,
     ) {
         let SessionInfo { peer_id, client_version, version, .. } = info;
+
+        if !self.is_valid_peer(peer_id) {
+            return;
+        }
 
         // Insert a new peer into the peerset.
         let peer = PeerMetadata::<N>::new(
@@ -1076,7 +1078,7 @@ where
         // Send a `NewPooledTransactionHashes` to the peer with up to
         // `SOFT_LIMIT_COUNT_HASHES_IN_NEW_POOLED_TRANSACTIONS_BROADCAST_MESSAGE`
         // transactions in the pool.
-        if self.network.is_initially_syncing() || self.network.tx_gossip_disabled() {
+        if self.network.is_initially_syncing() {
             trace!(target: "net::tx", ?peer_id, "Skipping transaction broadcast: node syncing or gossip disabled");
             return
         }
@@ -1174,9 +1176,6 @@ where
     ) {
         // If the node is pipeline syncing, ignore transactions
         if self.network.is_initially_syncing() {
-            return
-        }
-        if self.network.tx_gossip_disabled() {
             return
         }
 
